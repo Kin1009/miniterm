@@ -8,7 +8,7 @@ ctypes.windll.kernel32.SetConsoleTitleW("BAT / CMD / EXE / ASM05 Runner")
 commands = []
 def isAdmin():
     return ctypes.windll.shell32.IsUserAnAdmin() != 0
-def run_console_file(file_path):
+def run_cmd(file_path):
     subprocess.run(file_path, shell=True)
 def run_asm05(path):
     code = open(path, "r").read()
@@ -337,16 +337,25 @@ def run_asm05(path):
                 error(FE)
                 if stopwhenerror == 0: break
         counter += 1
-def execute_commands():
+def exec_cmd():
     global commands
-    user = getuser()
-    file = open(f"C:\\Users\\{user}\\AppData\\Local\\MiniTerminalTempCode.cmd", "w")
+    file = open(f"C:\\Users\\{getuser()}\\AppData\\Local\\MiniTerminalTempCode.cmd", "w")
     file.write("@echo off\n")
     for i in commands:
         file.write(i + "\n")
     file.close()
-    subprocess.run(f"cmd /c C:\\Users\\{user}\\AppData\\Local\\MiniTerminalTempCode.cmd", shell=True)
-    os.remove(f"C:\\Users\\{user}\\AppData\\Local\\MiniTerminalTempCode.cmd")
+    subprocess.run(f"cmd /c C:\\Users\\{getuser()}\\AppData\\Local\\MiniTerminalTempCode.cmd", shell=True)
+    os.remove(f"C:\\Users\\{getuser()}\\AppData\\Local\\MiniTerminalTempCode.cmd")
+def exec_asm05():
+    code = open(f"C:\\Users\\{getuser()}\\AppData\\Local\\MiniTerminalTempCode.asm05", "w")
+    a = ""
+    for i in commands:
+        a += i + "\n"
+    a = a[:-1]
+    code.write(a)
+    code.close()
+    run_asm05(f"C:\\Users\\{getuser()}\\AppData\\Local\\MiniTerminalTempCode.asm05")
+    os.remove(f"C:\\Users\\{getuser()}\\AppData\\Local\\MiniTerminalTempCode.asm05")
 def main():
     global commands
     subprocess.run("echo > nul", shell=True)
@@ -361,17 +370,37 @@ def main():
         command = input(a + getuser() + colorama.Back.RESET + ": " + colorama.Back.BLUE + current_dir + colorama.Back.RESET + " > ")
         if command.lower() == "!exit":
             break
-        elif command.lower().startswith("!run"):
+        elif command.lower().startswith("!runcmd"):
             if len(command.split(" ")) > 1:
                 if os.path.isfile(''.join(command.split(" ")[1:])):
                     if ''.join(command.split(" ")[1:]).lower().endswith(".bat") or ''.join(command.split(" ")[1:]).lower().endswith(".cmd") or ''.join(command.split(" ")[1:]).lower().endswith(".exe"):
-                        run_console_file(''.join(command.split(" ")[1:]))
-                    elif ''.join(command.split(" ")[1:]).lower().endswith(".asm05"):
-                        run_asm05(''.join(command.split(" ")[1:]))
+                        run_cmd(''.join(command.split(" ")[1:]))
+                    else:
+                        print(colorama.Back.RED + "Invalid format. The file must be with .bat, .cmd or .exe extension.")
                 else:
                     print(colorama.Back.RED + "The system cannot find the path specified.")
             else:
-                execute_commands()
+                exec_cmd()
+                commands = []
+        elif command.lower().startswith("!runasm"):
+            if len(command.split(" ")) > 1:
+                if os.path.isfile(''.join(command.split(" ")[1:])):
+                    if ''.join(command.split(" ")[1:]).lower().endswith(".asm05"):
+                        run_asm05(''.join(command.split(" ")[1:]))
+                    else:
+                        print(colorama.Back.RED + "Invalid format. The file must be with .asm05 extension.")
+                else:
+                    print(colorama.Back.RED + "The system cannot find the path specified.")
+            else:
+                code = open(f"C:\\Users\\{getuser()}\\AppData\\Local\\MiniTerminalTempCode.asm05", "w")
+                a = ""
+                for i in commands:
+                    a += i + "\n"
+                a = a[:-1]
+                code.write(a)
+                code.close()
+                run_asm05(f"C:\\Users\\{getuser()}\\AppData\\Local\\MiniTerminalTempCode.asm05")
+                os.remove(f"C:\\Users\\{getuser()}\\AppData\\Local\\MiniTerminalTempCode.asm05")
                 commands = []
         elif command.lower().startswith("!cd"):
             if len(command.split(" ")) > 1:
@@ -391,8 +420,25 @@ def main():
                 os.system("dir")
         elif command.lower() == "!cls":
             os.system("cls")
+        elif command.lower() == "!reset":
+            commands = []
         elif command.lower() in ("help", "!help"):
-            print("Help:\n!cls: clear screen\n!exit: exit\n!run: run\n!cd: change dir\n!dir: show dir\n!run (filename).bat: run (filename).bat\n!run (filename).cmd: run (filename).cmd\n!run (filename).exe: run (filename).exe\n!run (filename).asm05: run (filename).asm05")
+            print("""Help:
+CMD-like commands:
+    !cd: show directory
+    !cd <dir>: change directory
+    !dir: list current directory
+    !dir <dir>: list <dir>'s directory
+    !cls: clear screen
+    !exit: exit
+Commands:
+    !help or help: show help
+    !reset: clear command
+    !runcmd: run the script
+    !runcmd <bat-or-cmd-or-exe-extension-file>: run the file
+    !runasm: run the script
+    !runasm <asm-extension-file>: run the file
+Anything else you type is behaved like a script.""")
         else:
             commands.append(command)
 
