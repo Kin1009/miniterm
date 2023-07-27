@@ -48,9 +48,9 @@ A mini terminal used to run scripts (BAT / CMD / EXE / ASM05*)
         - `mod regA regB regDist`: `{regA}` % `{regB}` -> `{regDist}`
         - `flr regA regB regDist`: `{regA}` // `{regB}` -> `{regDist}`
     - Errors:
-        - RE: RegError (access a reg that doesn't exist)
-        - TE: TypeError (not the type it expected)
-        - FE: FuncError (invalid func)
-        - PE: ParamError (invalid params)
+        - `RE`: `RegError` (access a reg that doesn't exist)
+        - `TE`: `TypeError` (not the type it expected)
+        - `FE`: `FuncError` (invalid func)
+        - `PE`: `ParamError` (invalid params)
 - Notes
     *: Go to [ASM05](https://github.com/Kin1009/ASM05) for more detail. This is integraded to this program.
