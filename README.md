@@ -15,9 +15,15 @@ A mini terminal used to run scripts (BAT / CMD / EXE / ASM05* / INS**)
     - `!runcmd {bat-or-cmd-or-exe-file}`: run the file
     - `!runasm`: run the script
     - `!runasm {asm-file}`: run the file
-- offlineins-exclusive commands:
-    - `!pack {file-or-dir}`: pack the file
-    - `!extract {ins-file}`: extract the file
+- offlineins-exclusive commands (Extended):
+    - `!pack16 {path-to-file-or-dir}`: pack the file
+    - `!extract16 {path-to-ins16-file}`: extract the file
+    - `!pack32 {path-to-file-or-dir}`: pack the file
+    - `!extract32 {path-to-ins32-file}`: extract the file
+    - `!pack64 {path-to-file-or-dir}`: pack the file
+    - `!extract64 {path-to-ins64-file}`: extract the file
+    - `!pack85 {path-to-file-or-dir}`: pack the file
+    - `!extract85 {path-to-ins85-file}`: extract the file
 - ASM05-exclusive commands:
     - Functions:
         - `sti reg, value`: set reg `{reg}` to `{value}` (int)

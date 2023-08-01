@@ -5,7 +5,7 @@ from os.path import isdir, isfile, basename
 from subprocess import PIPE, CalledProcessError, run
 from sys import exit
 import colorama
-from base64 import b64decode, b64encode
+from base64 import b16encode, b16decode, b32encode, b32decode, b64encode, b64decode, b85encode, b85decode
 from shutil import make_archive, move
 from zipfile import ZipFile
 from random import randint
@@ -15,7 +15,83 @@ def isAdmin():
     return ctypes.windll.shell32.IsUserAnAdmin() != 0
 def run_cmd(file_path):
     run(file_path, shell=True)
-def create_installer(input_path, output_path):
+def pack16(input_path, output_path):
+    print("Packing: " + input_path)
+    string = ""
+    try:
+        for i in range(10):
+            string += "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[randint(0, len("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") - 1)]
+        if isfile(input_path):
+            with ZipFile(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip", 'w') as zipf:
+                zipf.write(input_path, basename(input_path))
+        elif isdir(input_path):
+            make_archive(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}", 'zip', input_path)
+        else:
+            print(colorama.Back.RED + "Invalid path." + colorama.Back.RESET)
+        with open(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip", 'rb') as zip_file:
+            base64_data = b16encode(zip_file.read())
+        with open(output_path, 'wb') as output_file:
+            output_file.write(base64_data)
+        remove(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip")
+    except Exception as e:
+        print(colorama.Back.RED + str(e).replace("\\\\", "\\"))
+def extract16(input_path, output_path):
+    print("Extracting: " + input_path)
+    try:
+        with open(input_path, 'rb') as input_file:
+            base64_data = input_file.read()
+        string = ""
+        for i in range(10):
+            string += "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[randint(0, len("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") - 1)]
+        with open(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip", 'wb') as zip_file:
+            zip_file.write(b16decode(base64_data))
+        if output_path.endswith('.zip'):
+            move(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip", output_path)
+        else:
+            with ZipFile(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip", 'r') as zip_ref:
+                zip_ref.extractall(output_path)
+        remove(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip")
+    except Exception as e:
+        print(colorama.Back.RED + str(e).replace("\\\\", "\\") + colorama.Back.RESET)
+def pack32(input_path, output_path):
+    print("Packing: " + input_path)
+    string = ""
+    try:
+        for i in range(10):
+            string += "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[randint(0, len("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") - 1)]
+        if isfile(input_path):
+            with ZipFile(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip", 'w') as zipf:
+                zipf.write(input_path, basename(input_path))
+        elif isdir(input_path):
+            make_archive(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}", 'zip', input_path)
+        else:
+            print(colorama.Back.RED + "Invalid path." + colorama.Back.RESET)
+        with open(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip", 'rb') as zip_file:
+            base64_data = b32encode(zip_file.read())
+        with open(output_path, 'wb') as output_file:
+            output_file.write(base64_data)
+        remove(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip")
+    except Exception as e:
+        print(colorama.Back.RED + str(e).replace("\\\\", "\\"))
+def extract32(input_path, output_path):
+    print("Extracting: " + input_path)
+    try:
+        with open(input_path, 'rb') as input_file:
+            base64_data = input_file.read()
+        string = ""
+        for i in range(10):
+            string += "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[randint(0, len("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") - 1)]
+        with open(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip", 'wb') as zip_file:
+            zip_file.write(b32decode(base64_data))
+        if output_path.endswith('.zip'):
+            move(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip", output_path)
+        else:
+            with ZipFile(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip", 'r') as zip_ref:
+                zip_ref.extractall(output_path)
+        remove(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip")
+    except Exception as e:
+        print(colorama.Back.RED + str(e).replace("\\\\", "\\") + colorama.Back.RESET)
+def pack64(input_path, output_path):
     print("Packing: " + input_path)
     string = ""
     try:
@@ -35,7 +111,7 @@ def create_installer(input_path, output_path):
         remove(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip")
     except Exception as e:
         print(colorama.Back.RED + str(e).replace("\\\\", "\\"))
-def extract_installer(input_path, output_path):
+def extract64(input_path, output_path):
     print("Extracting: " + input_path)
     try:
         with open(input_path, 'rb') as input_file:
@@ -45,6 +121,44 @@ def extract_installer(input_path, output_path):
             string += "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[randint(0, len("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") - 1)]
         with open(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip", 'wb') as zip_file:
             zip_file.write(b64decode(base64_data))
+        if output_path.endswith('.zip'):
+            move(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip", output_path)
+        else:
+            with ZipFile(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip", 'r') as zip_ref:
+                zip_ref.extractall(output_path)
+        remove(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip")
+    except Exception as e:
+        print(colorama.Back.RED + str(e).replace("\\\\", "\\") + colorama.Back.RESET)
+def pack85(input_path, output_path):
+    print("Packing: " + input_path)
+    string = ""
+    try:
+        for i in range(10):
+            string += "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[randint(0, len("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") - 1)]
+        if isfile(input_path):
+            with ZipFile(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip", 'w') as zipf:
+                zipf.write(input_path, basename(input_path))
+        elif isdir(input_path):
+            make_archive(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}", 'zip', input_path)
+        else:
+            print(colorama.Back.RED + "Invalid path." + colorama.Back.RESET)
+        with open(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip", 'rb') as zip_file:
+            base64_data = b85encode(zip_file.read())
+        with open(output_path, 'wb') as output_file:
+            output_file.write(base64_data)
+        remove(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip")
+    except Exception as e:
+        print(colorama.Back.RED + str(e).replace("\\\\", "\\"))
+def extract85(input_path, output_path):
+    print("Extracting: " + input_path)
+    try:
+        with open(input_path, 'rb') as input_file:
+            base64_data = input_file.read()
+        string = ""
+        for i in range(10):
+            string += "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[randint(0, len("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") - 1)]
+        with open(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip", 'wb') as zip_file:
+            zip_file.write(b85decode(base64_data))
         if output_path.endswith('.zip'):
             move(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip", output_path)
         else:
@@ -461,21 +575,78 @@ while True:
             system("dir")
     elif command.lower() == "!cls":
         system("cls")
-    elif command.lower() == "!colorama.Back.reset":
+    elif command.lower() == "!reset":
         commands = []
-    elif command.lower().startswith("!pack"):
+    elif command.lower().startswith("!pack16"):
         if len(command.split(" ")) > 1:
             if isfile(' '.join(command.split(" ")[1:])) or isdir(' '.join(command.split(" ")[1:])):
-                create_installer(' '.join(command.split(" ")[1:]), ' '.join(command.split(" ")[1:]) + ".ins")
+                pack16(' '.join(command.split(" ")[1:]), ' '.join(command.split(" ")[1:]) + ".ins16")
             else:
                 print(colorama.Back.RED + "Invalid path." + colorama.Back.RESET)
         else:
             print(colorama.Back.RED + "Invalid parameters." + colorama.Back.RESET)
-    elif command.lower().startswith("!extract"):
+    elif command.lower().startswith("!extract16"):
         if len(command.split(" ")) > 1:
             if isfile(' '.join(command.split(" ")[1:])) or isdir(' '.join(command.split(" ")[1:])):
-                if ' '.join(command.split(" ")[1:]).endswith(".ins"):
-                    extract_installer(' '.join(command.split(" ")[1:]), ' '.join(command.split(" ")[1:])[:-4])
+                if ' '.join(command.split(" ")[1:]).endswith(".ins16"):
+                    extract16(' '.join(command.split(" ")[1:]), ' '.join(command.split(" ")[1:])[:-4])
+                else:
+                    print(colorama.Back.RED + "Invalid file type." + colorama.Back.RESET)
+            else:
+                print(colorama.Back.RED + "Invalid path.") + colorama.Back.RESET
+        else:
+            print(colorama.Back.RED + "Invalid parameters." + colorama.Back.RESET)
+    elif command.lower().startswith("!pack32"):
+        if len(command.split(" ")) > 1:
+            if isfile(' '.join(command.split(" ")[1:])) or isdir(' '.join(command.split(" ")[1:])):
+                pack64(' '.join(command.split(" ")[1:]), ' '.join(command.split(" ")[1:]) + ".ins32")
+            else:
+                print(colorama.Back.RED + "Invalid path." + colorama.Back.RESET)
+        else:
+            print(colorama.Back.RED + "Invalid parameters." + colorama.Back.RESET)
+    elif command.lower().startswith("!extract32"):
+        if len(command.split(" ")) > 1:
+            if isfile(' '.join(command.split(" ")[1:])) or isdir(' '.join(command.split(" ")[1:])):
+                if ' '.join(command.split(" ")[1:]).endswith(".ins32"):
+                    extract32(' '.join(command.split(" ")[1:]), ' '.join(command.split(" ")[1:])[:-4])
+                else:
+                    print(colorama.Back.RED + "Invalid file type." + colorama.Back.RESET)
+            else:
+                print(colorama.Back.RED + "Invalid path.") + colorama.Back.RESET
+        else:
+            print(colorama.Back.RED + "Invalid parameters." + colorama.Back.RESET)
+    elif command.lower().startswith("!pack64"):
+        if len(command.split(" ")) > 1:
+            if isfile(' '.join(command.split(" ")[1:])) or isdir(' '.join(command.split(" ")[1:])):
+                pack64(' '.join(command.split(" ")[1:]), ' '.join(command.split(" ")[1:]) + ".ins64")
+            else:
+                print(colorama.Back.RED + "Invalid path." + colorama.Back.RESET)
+        else:
+            print(colorama.Back.RED + "Invalid parameters." + colorama.Back.RESET)
+    elif command.lower().startswith("!extract64"):
+        if len(command.split(" ")) > 1:
+            if isfile(' '.join(command.split(" ")[1:])) or isdir(' '.join(command.split(" ")[1:])):
+                if ' '.join(command.split(" ")[1:]).endswith(".ins64"):
+                    extract85(' '.join(command.split(" ")[1:]), ' '.join(command.split(" ")[1:])[:-4])
+                else:
+                    print(colorama.Back.RED + "Invalid file type." + colorama.Back.RESET)
+            else:
+                print(colorama.Back.RED + "Invalid path.") + colorama.Back.RESET
+        else:
+            print(colorama.Back.RED + "Invalid parameters." + colorama.Back.RESET)
+    elif command.lower().startswith("!pack85"):
+        if len(command.split(" ")) > 1:
+            if isfile(' '.join(command.split(" ")[1:])) or isdir(' '.join(command.split(" ")[1:])):
+                pack64(' '.join(command.split(" ")[1:]), ' '.join(command.split(" ")[1:]) + ".ins85")
+            else:
+                print(colorama.Back.RED + "Invalid path." + colorama.Back.RESET)
+        else:
+            print(colorama.Back.RED + "Invalid parameters." + colorama.Back.RESET)
+    elif command.lower().startswith("!extract85"):
+        if len(command.split(" ")) > 1:
+            if isfile(' '.join(command.split(" ")[1:])) or isdir(' '.join(command.split(" ")[1:])):
+                if ' '.join(command.split(" ")[1:]).endswith(".ins85"):
+                    extract85(' '.join(command.split(" ")[1:]), ' '.join(command.split(" ")[1:])[:-4])
                 else:
                     print(colorama.Back.RED + "Invalid file type." + colorama.Back.RESET)
             else:
@@ -494,15 +665,21 @@ CMD-like commands:
               
 Commands:
 !help or help: show help
-!colorama.Back.reset: clear command
+!reset: clear command
 !runcmd: run the script
-!runcmd <bat-or-cmd-or-exe-extension-file>: run the file
+!runcmd <bat-or-cmd-or-exe-file>: run the file
 !runasm: run the script
-!runasm <asm-extension-file>: run the file
+!runasm <asm-file>: run the file
               
-offlineins-exclusive commands:
-!pack <path-to-file-or-dir>: pack the file
-!extract <path-to-ins-file>: extract the file
+offlineins-exclusive commands (Extended):
+!pack16 <path-to-file-or-dir>: pack the file
+!extract16 <path-to-ins16-file>: extract the file
+!pack32 <path-to-file-or-dir>: pack the file
+!extract32 <path-to-ins32-file>: extract the file
+!pack64 <path-to-file-or-dir>: pack the file
+!extract64 <path-to-ins64-file>: extract the file
+!pack85 <path-to-file-or-dir>: pack the file
+!extract85 <path-to-ins85-file>: extract the file
               
 ASM05-exclusive commands:
 Functions:
