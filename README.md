@@ -1,5 +1,5 @@
 # miniterm
-A mini terminal used to run scripts (BAT / CMD / EXE / ASM05* / INS**)
+A mini terminal used to run scripts (BAT / CMD / EXE / ASM05* / INSxx**)
 # Usage
 - CMD exact commands
     - `!cd`: show directory
