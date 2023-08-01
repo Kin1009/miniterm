@@ -1,15 +1,58 @@
-import subprocess
-import os
-from getpass import *
-import colorama
 import ctypes
-import sys
+from getpass import getuser
+from os import chdir, getcwd, remove, system
+from os.path import isdir, isfile, basename
+from subprocess import PIPE, CalledProcessError, run
+from sys import exit
+import colorama
+from base64 import b64decode, b64encode
+from shutil import make_archive, move
+from zipfile import ZipFile
+from random import randint
 ctypes.windll.kernel32.SetConsoleTitleW("BAT / CMD / EXE / ASM05 Runner")
 commands = []
 def isAdmin():
     return ctypes.windll.shell32.IsUserAnAdmin() != 0
 def run_cmd(file_path):
-    subprocess.run(file_path, shell=True)
+    run(file_path, shell=True)
+def create_installer(input_path, output_path):
+    print("Packing: " + input_path)
+    string = ""
+    try:
+        for i in range(10):
+            string += "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[randint(0, len("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") - 1)]
+        if isfile(input_path):
+            with ZipFile(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip", 'w') as zipf:
+                zipf.write(input_path, basename(input_path))
+        elif isdir(input_path):
+            make_archive(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}", 'zip', input_path)
+        else:
+            print(colorama.Back.RED + "Invalid path." + colorama.Back.RESET)
+        with open(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip", 'rb') as zip_file:
+            base64_data = b64encode(zip_file.read())
+        with open(output_path, 'wb') as output_file:
+            output_file.write(base64_data)
+        remove(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip")
+    except Exception as e:
+        print(colorama.Back.RED + str(e).replace("\\\\", "\\"))
+def extract_installer(input_path, output_path):
+    print("Extracting: " + input_path)
+    try:
+        with open(input_path, 'rb') as input_file:
+            base64_data = input_file.read()
+        string = ""
+        for i in range(10):
+            string += "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[randint(0, len("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") - 1)]
+        with open(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip", 'wb') as zip_file:
+            zip_file.write(b64decode(base64_data))
+        if output_path.endswith('.zip'):
+            move(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip", output_path)
+        else:
+            with ZipFile(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip", 'r') as zip_ref:
+                zip_ref.extractall(output_path)
+        remove(f"C:/Users/{getuser()}/AppData/Local/Temp/{string}.zip")
+    except Exception as e:
+        print(colorama.Back.RED + str(e).replace("\\\\", "\\") + colorama.Back.RESET)
 def run_asm05(path):
     code = open(path, "r").read()
     stopwhenerror = 0
@@ -25,9 +68,9 @@ def run_asm05(path):
             case "3":
                 error = "ParamError: "
         error += "at line " + str(counter) + ", code: " + code[counter]
-        print(colorama.Back.RED + error)
+        print(colorama.Back.RED + error + colorama.Back.RESET)
         if stopwhenerror == 1:
-            sys.exit()
+            exit()
     RE = "0"
     TE = "1"
     FE = "2"
@@ -344,8 +387,8 @@ def exec_cmd():
     for i in commands:
         file.write(i + "\n")
     file.close()
-    subprocess.run(f"cmd /c C:\\Users\\{getuser()}\\AppData\\Local\\MiniTerminalTempCode.cmd", shell=True)
-    os.remove(f"C:\\Users\\{getuser()}\\AppData\\Local\\MiniTerminalTempCode.cmd")
+    run(f"cmd /c C:\\Users\\{getuser()}\\AppData\\Local\\MiniTerminalTempCode.cmd", shell=True)
+    remove(f"C:\\Users\\{getuser()}\\AppData\\Local\\MiniTerminalTempCode.cmd")
 def exec_asm05():
     code = open(f"C:\\Users\\{getuser()}\\AppData\\Local\\MiniTerminalTempCode.asm05", "w")
     a = ""
@@ -355,127 +398,148 @@ def exec_asm05():
     code.write(a)
     code.close()
     run_asm05(f"C:\\Users\\{getuser()}\\AppData\\Local\\MiniTerminalTempCode.asm05")
-    os.remove(f"C:\\Users\\{getuser()}\\AppData\\Local\\MiniTerminalTempCode.asm05")
-def main():
-    global commands
-    subprocess.run("echo > nul", shell=True)
-    print(colorama.Back.GREEN + "BAT / CMD / EXE / ASM05 Runner [Version 0.2]\nType \"!help\" or \"help\" for help.")
-    while True:
-        current_dir = os.getcwd()
-        a = colorama.Fore.RESET
-        if isAdmin():
-            a = colorama.Back.GREEN
+    remove(f"C:\\Users\\{getuser()}\\AppData\\Local\\MiniTerminalTempCode.asm05")
+run("echo > nul", shell=True)
+print(colorama.Back.GREEN + "BAT / CMD / EXE / ASM05 Runner [Version 0.2]\nType \"!help\" or \"help\" for help." + colorama.Back.RESET)
+while True:
+    current_dir = getcwd()
+    a = colorama.Back.RESET
+    if isAdmin():
+        a = colorama.Back.GREEN
+    else:
+        a = colorama.Back.RED
+    command = input(a + getuser() + colorama.Back.RESET + ": " + colorama.Back.BLUE + current_dir + colorama.Back.RESET + " > ")
+    if command.lower() == "!exit":
+        break
+    elif command.lower().startswith("!runcmd"):
+        if len(command.split(" ")) > 1:
+            if isfile(' '.join(command.split(" ")[1:])):
+                if ' '.join(command.split(" ")[1:]).lower().endswith(".bat") or ' '.join(command.split(" ")[1:]).lower().endswith(".cmd") or ''.join(command.split(" ")[1:]).lower().endswith(".exe"):
+                    run_cmd(''.join(command.split(" ")[1:]))
+                else:
+                    print(colorama.Back.RED + "Invalid format. The file must be with .bat, .cmd or .exe extension.")
+            else:
+                print(colorama.Back.RED + "The system cannot find the path specified.")
         else:
-            a = colorama.Back.RED
-        command = input(a + getuser() + colorama.Back.RESET + ": " + colorama.Back.BLUE + current_dir + colorama.Back.RESET + " > ")
-        if command.lower() == "!exit":
-            break
-        elif command.lower().startswith("!runcmd"):
-            if len(command.split(" ")) > 1:
-                if os.path.isfile(''.join(command.split(" ")[1:])):
-                    if ''.join(command.split(" ")[1:]).lower().endswith(".bat") or ''.join(command.split(" ")[1:]).lower().endswith(".cmd") or ''.join(command.split(" ")[1:]).lower().endswith(".exe"):
-                        run_cmd(''.join(command.split(" ")[1:]))
-                    else:
-                        print(colorama.Back.RED + "Invalid format. The file must be with .bat, .cmd or .exe extension.")
-                else:
-                    print(colorama.Back.RED + "The system cannot find the path specified.")
-            else:
-                exec_cmd()
-                commands = []
-        elif command.lower().startswith("!runasm"):
-            if len(command.split(" ")) > 1:
-                if os.path.isfile(''.join(command.split(" ")[1:])):
-                    if ''.join(command.split(" ")[1:]).lower().endswith(".asm05"):
-                        run_asm05(''.join(command.split(" ")[1:]))
-                    else:
-                        print(colorama.Back.RED + "Invalid format. The file must be with .asm05 extension.")
-                else:
-                    print(colorama.Back.RED + "The system cannot find the path specified.")
-            else:
-                code = open(f"C:\\Users\\{getuser()}\\AppData\\Local\\MiniTerminalTempCode.asm05", "w")
-                a = ""
-                for i in commands:
-                    a += i + "\n"
-                a = a[:-1]
-                code.write(a)
-                code.close()
-                run_asm05(f"C:\\Users\\{getuser()}\\AppData\\Local\\MiniTerminalTempCode.asm05")
-                os.remove(f"C:\\Users\\{getuser()}\\AppData\\Local\\MiniTerminalTempCode.asm05")
-                commands = []
-        elif command.lower().startswith("!cd"):
-            if len(command.split(" ")) > 1:
-                try:
-                    os.chdir("".join(command.split(" ")[1:]))
-                except:
-                    print(colorama.Back.RED + "The system cannot find the path specified.")
-            else:
-                print(os.getcwd())
-        elif command.lower().startswith("!dir"):
-            if len(command.split(" ")) > 1:
-                try:
-                    subprocess.run(["dir", "".join(command.split(" ")[1:])], shell=True, stderr=subprocess.PIPE)
-                except subprocess.CalledProcessError as e:
-                    print(colorama.Back.RED + e.stderr)
-            else:
-                os.system("dir")
-        elif command.lower() == "!cls":
-            os.system("cls")
-        elif command.lower() == "!reset":
+            exec_cmd()
             commands = []
-        elif command.lower() in ("help", "!help"):
-            print("""Help:
-CMD-like commands:
-    !cd: show directory
-    !cd <dir>: change directory
-    !dir: list current directory
-    !dir <dir>: list <dir>'s directory
-    !cls: clear screen
-    !exit: exit
-Commands:
-    !help or help: show help
-    !reset: clear command
-    !runcmd: run the script
-    !runcmd <bat-or-cmd-or-exe-extension-file>: run the file
-    !runasm: run the script
-    !runasm <asm-extension-file>: run the file
-ASM05-exclusive commands:
-    Functions:
-        sti reg, value: set reg <reg> to <value> (int)
-        sts reg, value: set reg <reg> to <value> (str) (hex)
-        otv reg: print reg <reg>
-        ots hex: print <hex> converted to string
-        in reg: set input to <reg> (let <reg> input)
-        add regA, regB, regDist: add <regA> to <regB>, set result to <regDist>
-        sub regA, regB, regDist: sub <regA> to <regB>, set result to <regDist>
-        mul regA, regB, regDist: mul <regA> to <regB>, set result to <regDist>
-        div regA, regB, regDist: div <regA> to <regB>, set result to <regDist>
-        exp regA, regB, regDist: exp <regA> to <regB>, set result to <regDist>
-        and regA, regB, regDist: and <regA> and <regB>, set result to <regDist>
-        not regA, regDist: not <regA>, set result to <regDist>
-        nnd regA, regB, regDist: nand <regA> and <regB>, set result to <regDist>
-        or regA, regB, regDist: or <regA> and <regB>, set result to <regDist>
-        nor regA, regB, regDist: nor <regA> and <regB>, set result to <regDist>
-        xor regA, regB, regDist: xor <regA> and <regB>, set result to <regDist>
-        equ regA, regB, regDist: if <regA> == <regB>, set 1 to <regDist> else 0
-        grt regA, regB, regDist: if <regA> > <regB>, set 1 to <regDist> else 0
-        lss regA, regB, regDist: if <regA> < <regB>, set 1 to <regDist> else 0
-        jmp line: jump to line <line>
-        jif line, reg: jump to line <line> if <reg> == 1
-        var <reg>: make reg <reg>
-        bol reg, regDist: turn <reg> to boolean, set result to <regDist> 
-        apn regA regB regDist: <regDist> = <regA> + <regB>
-        inc reg: <reg> += 1
-        dec reg: <reg> -= 1
-        mod regA regB regDist: <regA> % <regB> -> <regDist>
-        flr regA regB regDist: <regA> % <regB> -> <regDist>
-        ; (semicolon symbol): comment
-    Errors:
-        RE: RegError (access a reg that doesn't exist)
-        TE: TypeError (not the type it expected)
-        FE: FuncError (invalid func)
-        PE: ParamError (invalid params) """)
+    elif command.lower().startswith("!runasm"):
+        if len(command.split(" ")) > 1:
+            if isfile(' '.join(command.split(" ")[1:])):
+                if ' '.join(command.split(" ")[1:]).lower().endswith(".asm05"):
+                    run_asm05(' '.join(command.split(" ")[1:]))
+                else:
+                    print(colorama.Back.RED + "Invalid format. The file must be with .asm05 extension." + colorama.Back.RESET)
+            else:
+                print(colorama.Back.RED + "The system cannot find the path specified." + colorama.Back.RESET)
         else:
-            commands.append(command)
-
-if __name__ == "__main__":
-    main()
+            code = open(f"C:\\Users\\{getuser()}\\AppData\\Local\\MiniTerminalTempCode.asm05", "w")
+            a = ""
+            for i in commands:
+                a += i + "\n"
+            a = a[:-1]
+            code.write(a)
+            code.close()
+            run_asm05(f"C:\\Users\\{getuser()}\\AppData\\Local\\MiniTerminalTempCode.asm05")
+            remove(f"C:\\Users\\{getuser()}\\AppData\\Local\\MiniTerminalTempCode.asm05")
+            commands = []
+    elif command.lower().startswith("!cd"):
+        if len(command.split(" ")) > 1:
+            try:
+                chdir(" ".join(command.split(" ")[1:]))
+            except:
+                print(colorama.Back.RED + "The system cannot find the path specified." + colorama.Back.RESET)
+        else:
+            print(getcwd())
+    elif command.lower().startswith("!dir"):
+        if len(command.split(" ")) > 1:
+            try:
+                run(["dir", " ".join(command.split(" ")[1:])], shell=True, stderr=PIPE)
+            except CalledProcessError as e:
+                print(colorama.Back.RED + e.stderr + colorama.Back.RESET)
+        else:
+            system("dir")
+    elif command.lower() == "!cls":
+        system("cls")
+    elif command.lower() == "!colorama.Back.reset":
+        commands = []
+    elif command.lower().startswith("!pack"):
+        if len(command.split(" ")) > 1:
+            if isfile(' '.join(command.split(" ")[1:])) or isdir(' '.join(command.split(" ")[1:])):
+                create_installer(' '.join(command.split(" ")[1:]), ' '.join(command.split(" ")[1:]) + ".ins")
+            else:
+                print(colorama.Back.RED + "Invalid path." + colorama.Back.RESET)
+        else:
+            print(colorama.Back.RED + "Invalid parameters." + colorama.Back.RESET)
+    elif command.lower().startswith("!extract"):
+        if len(command.split(" ")) > 1:
+            if isfile(' '.join(command.split(" ")[1:])) or isdir(' '.join(command.split(" ")[1:])):
+                if ' '.join(command.split(" ")[1:]).endswith(".ins"):
+                    extract_installer(' '.join(command.split(" ")[1:]), ' '.join(command.split(" ")[1:])[:-4])
+                else:
+                    print(colorama.Back.RED + "Invalid file type." + colorama.Back.RESET)
+            else:
+                print(colorama.Back.RED + "Invalid path.") + colorama.Back.RESET
+        else:
+            print(colorama.Back.RED + "Invalid parameters." + colorama.Back.RESET)
+    elif command.lower() in ("help", "!help"):
+        print("""Help:
+CMD-like commands:
+!cd: show directory
+!cd <dir>: change directory
+!dir: list current directory
+!dir <dir>: list <dir>'s directory
+!cls: clear screen
+!exit: exit
+              
+Commands:
+!help or help: show help
+!colorama.Back.reset: clear command
+!runcmd: run the script
+!runcmd <bat-or-cmd-or-exe-extension-file>: run the file
+!runasm: run the script
+!runasm <asm-extension-file>: run the file
+              
+offlineins-exclusive commands:
+!pack <path-to-file-or-dir>: pack the file
+!extract <path-to-ins-file>: extract the file
+              
+ASM05-exclusive commands:
+Functions:
+    sti reg, value: set reg <reg> to <value> (int)
+    sts reg, value: set reg <reg> to <value> (str) (hex)
+    otv reg: print reg <reg>
+    ots hex: print <hex> converted to string
+    in reg: set input to <reg> (let <reg> input)
+    add regA, regB, regDist: add <regA> to <regB>, set result to <regDist>
+    sub regA, regB, regDist: sub <regA> to <regB>, set result to <regDist>
+    mul regA, regB, regDist: mul <regA> to <regB>, set result to <regDist>
+    div regA, regB, regDist: div <regA> to <regB>, set result to <regDist>
+    exp regA, regB, regDist: exp <regA> to <regB>, set result to <regDist>
+    and regA, regB, regDist: and <regA> and <regB>, set result to <regDist>
+    not regA, regDist: not <regA>, set result to <regDist>
+    nnd regA, regB, regDist: nand <regA> and <regB>, set result to <regDist>
+    or regA, regB, regDist: or <regA> and <regB>, set result to <regDist>
+    nor regA, regB, regDist: nor <regA> and <regB>, set result to <regDist>
+    xor regA, regB, regDist: xor <regA> and <regB>, set result to <regDist>
+    equ regA, regB, regDist: if <regA> == <regB>, set 1 to <regDist> else 0
+    grt regA, regB, regDist: if <regA> > <regB>, set 1 to <regDist> else 0
+    lss regA, regB, regDist: if <regA> < <regB>, set 1 to <regDist> else 0
+    jmp line: jump to line <line>
+    jif line, reg: jump to line <line> if <reg> == 1
+    var <reg>: make reg <reg>
+    bol reg, regDist: turn <reg> to boolean, set result to <regDist> 
+    apn regA regB regDist: <regDist> = <regA> + <regB>
+    inc reg: <reg> += 1
+    dec reg: <reg> -= 1
+    mod regA regB regDist: <regA> % <regB> -> <regDist>
+    flr regA regB regDist: <regA> % <regB> -> <regDist>
+    ; (semicolon symbol): comment
+              
+Errors:
+    RE: RegError (access a reg that doesn't exist)
+    TE: TypeError (not the type it expected)
+    FE: FuncError (invalid func)
+    PE: ParamError (invalid params) """)
+    else:
+        commands.append(command)

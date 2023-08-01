@@ -1,5 +1,5 @@
 # miniterm
-A mini terminal used to run scripts (BAT / CMD / EXE / ASM05*)
+A mini terminal used to run scripts (BAT / CMD / EXE / ASM05* / INS**)
 # Usage
 - CMD exact commands
     - `!cd`: show directory
@@ -12,9 +12,12 @@ A mini terminal used to run scripts (BAT / CMD / EXE / ASM05*)
     - `!help` or `help`: show help
     - `!reset`: clear command
     - `!runcmd`: run the script
-    - `!runcmd {bat-or-cmd-or-exe--file}`: run the file
+    - `!runcmd {bat-or-cmd-or-exe-file}`: run the file
     - `!runasm`: run the script
-    - `!runasm {asm--file}`: run the file
+    - `!runasm {asm-file}`: run the file
+- offlineins-exclusive commands:
+    - `!pack {file-or-dir}`: pack the file
+    - `!extract {ins-file}`: extract the file
 - ASM05-exclusive commands:
     - Functions:
         - `sti reg, value`: set reg `{reg}` to `{value}` (int)
@@ -53,4 +56,5 @@ A mini terminal used to run scripts (BAT / CMD / EXE / ASM05*)
         - `FE`: `FuncError` (invalid func)
         - `PE`: `ParamError` (invalid params)
 - Notes
-    *: Go to [ASM05](https://github.com/Kin1009/ASM05) for more detail. This is integraded to this program.
+    *: Go to [ASM05](https://github.com/Kin1009/ASM05) for more detail.
+    **: Go to [offlineins](https://github.com/Kin1009/offlineins) for more detail.
