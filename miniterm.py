@@ -589,7 +589,7 @@ while True:
         if len(command.split(" ")) > 1:
             if isfile(' '.join(command.split(" ")[1:])) or isdir(' '.join(command.split(" ")[1:])):
                 if ' '.join(command.split(" ")[1:]).endswith(".ins16"):
-                    extract16(' '.join(command.split(" ")[1:]), ' '.join(command.split(" ")[1:])[:-4])
+                    extract16(' '.join(command.split(" ")[1:]), ' '.join(command.split(" ")[1:])[:-5])
                 else:
                     print(colorama.Back.RED + "Invalid file type." + colorama.Back.RESET)
             else:
@@ -599,7 +599,7 @@ while True:
     elif command.lower().startswith("!pack32"):
         if len(command.split(" ")) > 1:
             if isfile(' '.join(command.split(" ")[1:])) or isdir(' '.join(command.split(" ")[1:])):
-                pack64(' '.join(command.split(" ")[1:]), ' '.join(command.split(" ")[1:]) + ".ins32")
+                pack32(' '.join(command.split(" ")[1:]), ' '.join(command.split(" ")[1:]) + ".ins32")
             else:
                 print(colorama.Back.RED + "Invalid path." + colorama.Back.RESET)
         else:
@@ -608,7 +608,7 @@ while True:
         if len(command.split(" ")) > 1:
             if isfile(' '.join(command.split(" ")[1:])) or isdir(' '.join(command.split(" ")[1:])):
                 if ' '.join(command.split(" ")[1:]).endswith(".ins32"):
-                    extract32(' '.join(command.split(" ")[1:]), ' '.join(command.split(" ")[1:])[:-4])
+                    extract32(' '.join(command.split(" ")[1:]), ' '.join(command.split(" ")[1:])[:-5])
                 else:
                     print(colorama.Back.RED + "Invalid file type." + colorama.Back.RESET)
             else:
@@ -627,7 +627,7 @@ while True:
         if len(command.split(" ")) > 1:
             if isfile(' '.join(command.split(" ")[1:])) or isdir(' '.join(command.split(" ")[1:])):
                 if ' '.join(command.split(" ")[1:]).endswith(".ins64"):
-                    extract85(' '.join(command.split(" ")[1:]), ' '.join(command.split(" ")[1:])[:-4])
+                    extract64(' '.join(command.split(" ")[1:]), ' '.join(command.split(" ")[1:])[:-5])
                 else:
                     print(colorama.Back.RED + "Invalid file type." + colorama.Back.RESET)
             else:
@@ -637,7 +637,7 @@ while True:
     elif command.lower().startswith("!pack85"):
         if len(command.split(" ")) > 1:
             if isfile(' '.join(command.split(" ")[1:])) or isdir(' '.join(command.split(" ")[1:])):
-                pack64(' '.join(command.split(" ")[1:]), ' '.join(command.split(" ")[1:]) + ".ins85")
+                pack85(' '.join(command.split(" ")[1:]), ' '.join(command.split(" ")[1:]) + ".ins85")
             else:
                 print(colorama.Back.RED + "Invalid path." + colorama.Back.RESET)
         else:
@@ -646,7 +646,7 @@ while True:
         if len(command.split(" ")) > 1:
             if isfile(' '.join(command.split(" ")[1:])) or isdir(' '.join(command.split(" ")[1:])):
                 if ' '.join(command.split(" ")[1:]).endswith(".ins85"):
-                    extract85(' '.join(command.split(" ")[1:]), ' '.join(command.split(" ")[1:])[:-4])
+                    extract85(' '.join(command.split(" ")[1:]), ' '.join(command.split(" ")[1:])[:-5])
                 else:
                     print(colorama.Back.RED + "Invalid file type." + colorama.Back.RESET)
             else:
