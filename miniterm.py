@@ -1,14 +1,25 @@
+import base64
+import copy
 import ctypes
+import json
+import os
+from base64 import (b16decode, b16encode, b32decode, b32encode, b64decode,
+                    b64encode, b85decode, b85encode)
 from getpass import getuser
 from os import chdir, getcwd, remove, system
-from os.path import isdir, isfile, basename
-from subprocess import PIPE, CalledProcessError, run
-from sys import exit
-import colorama
-from base64 import b16encode, b16decode, b32encode, b32decode, b64encode, b64decode, b85encode, b85decode
-from shutil import make_archive, move
-from zipfile import ZipFile
+from os.path import basename, isdir, isfile
 from random import randint
+from shutil import make_archive, move
+from subprocess import PIPE, CalledProcessError, run
+from sys import argv, exit
+from zipfile import ZipFile
+
+import colorama
+
+try:
+    chdir(argv[1])#chdir(' '.join(argv[1:]))
+except:
+    pass
 ctypes.windll.kernel32.SetConsoleTitleW("BAT / CMD / EXE / ASM05 Runner")
 commands = []
 def isAdmin():
@@ -529,7 +540,7 @@ while True:
         if len(command.split(" ")) > 1:
             if isfile(' '.join(command.split(" ")[1:])):
                 if ' '.join(command.split(" ")[1:]).lower().endswith(".bat") or ' '.join(command.split(" ")[1:]).lower().endswith(".cmd") or ''.join(command.split(" ")[1:]).lower().endswith(".exe"):
-                    run_cmd(''.join(command.split(" ")[1:]))
+                    run_cmd(' '.join(command.split(" ")[1:]))
                 else:
                     print(colorama.Back.RED + "Invalid format. The file must be with .bat, .cmd or .exe extension.")
             else:
@@ -653,6 +664,393 @@ while True:
                 print(colorama.Back.RED + "Invalid path.") + colorama.Back.RESET
         else:
             print(colorama.Back.RED + "Invalid parameters." + colorama.Back.RESET)
+    elif command.lower() == "!asm05":
+        c = ""
+        print("ASM0.5 [Version 1.2]\nType \"help\" for help.")
+        while True:
+            inp = input("> ")
+            match inp:
+                case "run":
+                    with open(f"C:\\Users\\{getuser()}\\AppData\\Local\\Temp\\asm05.asm05", "w") as file:
+                        file.write(c[:-1])
+                    run_asm05(f"C:\\Users\\{getuser()}\\AppData\\Local\\Temp\\asm05.asm05")
+                    remove(f"C:\\Users\\{getuser()}\\AppData\\Local\\Temp\\asm05.asm05")
+                    c = ""
+                case "exit":
+                    break
+                case "help":
+                    print("""
+ASM05 help:
+1. Functions:
+sti reg, value            set reg <reg> to <value> (int)
+sts reg, value            set reg <reg> to <value> (str) (hex)
+otv reg                   print reg <reg>
+ots hex                   print <hex> converted to string
+in reg                    set input to <reg> (let <reg> input)
+add regA, regB, regDist   add <regA> to <regB>, set result to <regDist>
+sub regA, regB, regDist   sub <regA> to <regB>, set result to <regDist>
+mul regA, regB, regDist   mul <regA> to <regB>, set result to <regDist>
+div regA, regB, regDist   div <regA> to <regB>, set result to <regDist>
+exp regA, regB, regDist   exp <regA> to <regB>, set result to <regDist>
+and regA, regB, regDist   and <regA> and <regB>, set result to <regDist>
+not regA, regDist         not <regA>, set result to <regDist>
+nnd regA, regB, regDist   nand <regA> and <regB>, set result to <regDist>
+or regA, regB, regDist    or <regA> and <regB>, set result to <regDist>
+nor regA, regB, regDist   nor <regA> and <regB>, set result to <regDist>
+xor regA, regB, regDist   xor <regA> and <regB>, set result to <regDist>
+equ regA, regB, regDist   if <regA> == <regB>, set 1 to <regDist> else 0
+grt regA, regB, regDist   if <regA> > <regB>, set 1 to <regDist> else 0
+lss regA, regB, regDist   if <regA> < <regB>, set 1 to <regDist> else 0
+jmp line                  jump to line <line>
+jif line, reg             jump to line <line> if <reg> == 1
+var <reg>                 make reg <reg>
+bol reg, regDist          turn <reg> to boolean, set result to <regDist> 
+apn regA regB regDist     <regDist> = <regA> + <regB>
+inc reg                   <reg> += 1
+dec reg                   <reg> -= 1
+mod regA regB regDist     <regA> % <regB> -> <regDist>
+flr regA regB regDist     <regA> % <regB> -> <regDist>
+;                         comment
+
+2. Errors:
+RE         RegError (access a reg that doesn't exist)
+TE         TypeError (not the type it expected)
+FE         FuncError (invalid func)
+PE         ParamError (invalid params) 
+
+3. Console commands:
+run        run code
+exit       exit
+help       help""")
+                case _:
+                    c += inp + "\n"
+    elif command.lower() == "!minifs":
+        class Exit(Exception):
+            pass
+        class FileSys:
+            current_drive = "c"  # Default drive
+            drive_folder_path = os.path.join(os.path.expandvars("%LOCALAPPDATA%"), "minifs")
+            VER = "Mini Filesystem [B3F5 (Import / export folders update)] (Bugfix 3 Features 5)"
+            def __init__(self):
+                self.current_path = []
+                self.drive = {}
+                self.load_drive(self.drive_folder_path + "\\" + self.current_drive)
+            def cd(self, target_path=None):
+                if target_path:
+                    target_folders = target_path.split("\\")
+                    current = self.drive
+                    for i in self.current_path:
+                        current = current[i]
+                    for i in target_folders:
+                            if (i in current) and isinstance(current[i], dict):
+                                current = current[i]
+                                self.current_path.append(i)
+                            elif i == "..":
+                                self.current_path.pop()
+                                current = self.drive
+                                for i in self.current_path:
+                                    current = current[i]
+                            else:
+                                print("Target directory not found.")
+                                return
+                else:
+                    print(self.current_drive + "\\" + "\\".join(self.current_path))
+
+            def dir(self, target_path=None):
+                if not target_path:
+                    target_folders = ""
+                else:
+                    target_folders = target_path.split("\\")
+                current = self.drive
+                current_path = copy.deepcopy(self.current_path)
+                for i in self.current_path:
+                    current = current[i]
+                for i in target_folders:
+                        if (i in current) and isinstance(current[i], dict):
+                            current = current[i]
+                            self.current_path.append(i)
+                        elif i == "..":
+                            self.current_path.pop()
+                            current = self.drive
+                            for i in self.current_path:
+                                current = current[i]
+                        else:
+                            print("Target directory not found.")
+                            self.current_path = current_path
+                            return
+                folders, files = [], []
+                for item in current.keys():
+                    if isinstance(current[item], dict):
+                        folders.append(item)
+                    elif isinstance(current[item], str):
+                        files.append(item)
+                for file in files:
+                    print(f"file {file}")
+                for folder in folders:
+                    print(f"folder {folder}")
+                self.current_path = current_path
+            def read(self, target):
+                current = self.drive
+                for folder in self.current_path:
+                    current = current[folder]
+                if target in current and isinstance(current[target], str):
+                    print(current[target])
+                else:
+                    print("Target is not a file.")
+            def save_drive(self):
+                path = os.path.join(drive_folder_path, f"{self.current_drive}")
+                drive_json = json.dumps(self.drive, indent=4)
+                drive_b64 = base64.b64encode(drive_json.encode("utf-8"))
+                with open(path, "wb") as f:
+                    f.write(drive_b64)
+
+            def load_drive(self, path):
+                if os.path.exists(path):
+                    with open(path, "r") as f:
+                        drive_b64 = f.read()
+                        try:
+                            drive_json = base64.b64decode(drive_b64).decode("utf-8")
+                            self.drive = json.loads(drive_json)
+                        except Exception as e:
+                            print("Error loading drive:", e)
+                            self.drive = {}
+                else:
+                    print("Drive file not found, starting with empty drive.")
+
+            def new_drive(self, drive_name):
+                self.save_drive()  # Save the current drive before creating a new one
+                self.drive = {}
+                self.current_path = []
+                self.current_drive = drive_name
+                self.save_drive()
+
+            def new_folder(self, folder_name):
+                current = self.drive
+                for folder in self.current_path:
+                    current = current[folder]
+                current[folder_name] = {}
+
+            def delete_item(self, item_name):
+                current = self.drive
+                for folder in self.current_path:
+                    current = current[folder]
+                if item_name in current:
+                    del current[item_name]
+                else:
+                    print("Item not found.")
+
+            def delete_drive(self, drive_name):
+                drive_file_path = os.path.join(drive_folder_path, f"{drive_name.lower()}")
+                if os.path.exists(drive_file_path):
+                    os.remove(drive_file_path)
+                    if self.current_drive == drive_name:
+                        self.current_drive = "c"
+                else:
+                    print("Invalid drive.")
+            def write(self, filename):
+                try:
+                    current = self.drive
+                    for folder in self.current_path:
+                        current = current[folder]
+                    a = base64.b16decode(input("Enter base-16 string: ").encode(), True)
+                    res = ""
+                    for i in a: res += chr(i)
+                    current[filename] = res
+                except Exception as e:
+                    print("Error writing file: " + str(e))
+
+            def write_(self, filename, a):
+                current = self.drive
+                for folder in self.current_path:
+                    current = current[folder]
+                res = ""
+                for i in a: res += chr(i)
+                current[filename] = res
+            def path_to_dict(self, path, d={}):
+                name = os.path.basename(path)
+                if os.path.isdir(path):
+                    if name not in d:
+                        d[name] = {}
+                    for x in os.listdir(path):
+                        self.path_to_dict(os.path.join(path, x), d[name])
+                else:
+                    try:
+                        with open(path, 'r') as file:
+                            d[name] = file.read()
+                    except Exception as e:
+                        print("Error: " + str(e))
+                return d
+            def import_(self, path):
+                if os.path.isfile(path):
+                    self.write_(os.path.basename(path), open(path, "rb").read())
+                elif os.path.isdir(path):
+                    data = self.path_to_dict(path=path)
+                    current = self.drive
+                    for i in self.current_path:
+                        current = current[i]
+                    current.update(data)
+                else:
+                    print("Invalid path.")
+            def export(self, file, dist):
+                def one_directory(dic, path):
+                    for name, info in dic.items():
+                        next_path = path + "/" + name
+                        if isinstance(info, dict):
+                            next_path = os.path.abspath(next_path)
+                            os.mkdir(next_path)
+                            one_directory(info, next_path)
+                        else:
+                            try:
+                                with open(os.path.abspath(os.path.join(next_path)), "w") as f:
+                                    f.write(info)
+                            except Exception as e:
+                                print("Error: " + str(e))
+                try:
+                    current = self.drive
+                    for folder in self.current_path:
+                        current = current[folder]
+                    if file not in current:
+                        print("Invalid path.")
+                    elif isinstance(current[file], str):
+                        a = open(dist, "w")
+                        a.write(current[file])
+                        a.close()
+                    else:
+                        one_directory(current, dist)
+                except Exception as e:
+                    print("Error: " + str(e))
+            def run(self, code_) -> int:
+                code_ = code_.splitlines() if "\n" in code_ else [code_]
+                for i in code_:
+                    try:
+                        command = i.split(" ")
+                        if not command: pass
+                        elif command[0] == "dir":
+                            if len(command) > 1:
+                                self.dir(" ".join(command[1:]))
+                            else:
+                                self.dir()
+                        elif command[0] == "cd":
+                            if len(command) > 1:
+                                self.cd(" ".join(command[1:]))
+                            else:
+                                self.cd()
+                        elif command[0] == "read":
+                            if len(command) > 1:
+                                self.read(" ".join(command[1:]))
+                        elif command[0] == "mkdrv":
+                            if len(command) > 1:
+                                if not "\\" in " ".join(command[1:]):
+                                    self.new_drive(" ".join(command[1:]))
+                                else:
+                                    print("Drive name mustn't contain backslashes")
+                        elif command[0] == "drv":
+                            self.save_drive()
+                            if len(command) > 1:
+                                drive_file_path = os.path.join(drive_folder_path, f"{command[1].lower()}")
+                                if os.path.exists(drive_file_path):
+                                    self.load_drive(drive_file_path)
+                                    self.current_drive = command[1]
+                                else:
+                                    print("Drive not found.")
+                        elif command[0] == "mkdir":
+                            if len(command) > 1:
+                                if not "\\" in " ".join(command[1:]):
+                                    self.new_folder(" ".join(command[1:]))
+                                else:
+                                    print("Path mustn't contain backslashes")
+                        elif command[0] == "del":
+                            if len(command) > 1:
+                                self.delete_item(" ".join(command[1:]))
+                        elif command[0] == "deldrv":
+                            if len(command) > 1:
+                                if command[1].lower() == "c":
+                                    print("Cannot delete the default 'c' drive.")
+                                else:
+                                    self.delete_drive(command[1])
+                        elif command[0] == "write":
+                            if len(command) > 1:
+                                filename = " ".join(command[1:]).split("|", 1)[0]
+                                if "\\" in filename:
+                                    print("Path mustn't contain backslashes.")
+                                else:
+                                    data = " ".join(command[1:]).split("|", 1)[1]
+                                    self.write_(filename=filename, a=data)
+                            if len(command) > 1:
+                                if not "\\" in " ".join(command[1:]):
+                                    self.write(" ".join(command[1:]))
+                                else:
+                                    print("Path mustn't contain backslashes")
+                        elif command[0] == "import":
+                            if len(command) > 1:
+                                self.import_(" ".join(command[1:]))
+                        elif command[0] == "export":
+                            if len(command) > 1:
+                                self.export(" ".join(command[1:]).split("|")[0], " ".join(command[1:]).split("|")[1])
+                        elif command[0] == "run":
+                            if len(command) > 1:
+                                return self.runfile(" ".join(command[1:]))
+                        elif command[0] == "exit":
+                            self.save_drive()
+                            raise Exit 
+                        elif command[0] == "cls":
+                            os.system("cls")
+                        elif command[0] == "ver":
+                            print(self.VER)
+                        elif command[0] == "help":
+                            print("""Help:
+        Basic:
+            help: help
+            exit: exit
+            cls: clear
+            ver: show version
+        Create:
+            mkdir <folder_name>: make folder
+            mkdrv <drive_name>: make drive
+            import <file_on_u_computer>: import that file / folder, store it at current dir
+        Delete:
+            del <file_or_folder>: delete file / folder
+            deldrv <drive_name>: delete drive
+        View:
+            dir: show current dir files / folders, support "\\" and ".."
+            dir <folder>: show that dir files / folders, support "\\" and ".."
+            cd: show current dir, support "\\" and ".."
+            cd <folder>: go to that dir, support "\\" and ".."
+            read <file>: show file contents
+            drv <drive_name>: go to that drive
+        Other:
+            export <file_in_this_prog>|<output_file_on_u_computer>: export to your computer ("|" included, example: "export a|c\\d")
+            run <file>: run the file using this set of command""")
+                        else:
+                            print("Unknown command: \"" + command[0] + "\"")
+                    except Exit as e:
+                        return 1
+                    except Exception as e:
+                        print("Error: " + str(e))
+                    self.save_drive()
+                return 0
+            def runfile(self, file):
+                current = self.drive
+                for i in self.current_path:
+                    current = current[i]
+                if (file in current) and isinstance(current[file], str):
+                    return self.run(current[file])
+                else:
+                    print("Invalid item.")
+        # Define the drive folder path (Windows-specific)
+        drive_folder_path = os.path.join(os.path.expandvars("%LOCALAPPDATA%"), "minifs")
+        os.makedirs(drive_folder_path, exist_ok=True)
+
+        # Example usage
+        self = FileSys()
+        print(f"{self.VER}\nType \"help\" to get help.")
+        while True:
+            current_dir = os.path.abspath(os.path.join(drive_folder_path, *self.current_path))
+            SEP = "\\"
+            prompt = f"{self.current_drive}> " if not self.current_path else f"{self.current_drive}\\{SEP.join(self.current_path)}> "
+            inp = input(prompt)
+            if self.run(inp) == 1:
+                break
     elif command.lower() in ("help", "!help"):
         print("""Help:
 CMD-like commands:
@@ -671,7 +1069,7 @@ Commands:
 !runasm: run the script
 !runasm <asm-file>: run the file
               
-offlineins-exclusive commands (Extended):
+Offline installer-exclusive commands (Extended):
 !pack16 <path-to-file-or-dir>: pack the file
 !extract16 <path-to-ins16-file>: extract the file
 !pack32 <path-to-file-or-dir>: pack the file
@@ -682,6 +1080,7 @@ offlineins-exclusive commands (Extended):
 !extract85 <path-to-ins85-file>: extract the file
               
 ASM05-exclusive commands:
+!asm05: open ASM05 shell
 Functions:
     sti reg, value: set reg <reg> to <value> (int)
     sts reg, value: set reg <reg> to <value> (str) (hex)
@@ -717,6 +1116,31 @@ Errors:
     RE: RegError (access a reg that doesn't exist)
     TE: TypeError (not the type it expected)
     FE: FuncError (invalid func)
-    PE: ParamError (invalid params) """)
+    PE: ParamError (invalid params)
+
+Mini Filesystem-exclusive commands:
+!minifs: open Mini Filesystem's shell
+Basic:
+    help: help
+    exit: exit
+    cls: clear
+    ver: show version
+Create:
+    mkdir <folder_name>: make folder
+    mkdrv <drive_name>: make drive
+    import <file_on_u_computer>: import that file / folder, store it at current dir
+Delete:
+    del <file_or_folder>: delete file / folder
+    deldrv <drive_name>: delete drive
+View:
+    dir: show current dir files / folders, support "\\" and ".."
+    dir <folder>: show that dir files / folders, support "\\" and ".."
+    cd: show current dir, support "\\" and ".."
+    cd <folder>: go to that dir, support "\\" and ".."
+    read <file>: show file contents
+    drv <drive_name>: go to that drive
+Other:
+    export <file_in_this_prog>|<output_file_on_u_computer>: export to your computer ("|" included, example: "export a|c\\d")
+    run <file>: run the file using this set of command""")
     else:
         commands.append(command)
